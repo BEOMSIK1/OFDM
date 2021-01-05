@@ -84,10 +84,10 @@ for SNR_index=1:length(SNR)
         
         % s_qpsk 행렬 값 및 신호 번호
         %
-        % (1,1) -> 1-j   |  (1,2) -> 1+j
+        % (1,1) -> -1+j  |  (1,2) -> 1+j
         %      s2        |       s1
         % -------------------------------
-        % (2,1) -> -1-j  |  (2,2) -> -1+j
+        % (2,1) -> -1-j  |  (2,2) -> 1-j
         %      s3        |       s4
         
         for row_index=1:2                           
@@ -132,11 +132,11 @@ for SNR_index=1:length(SNR)
         
         h0x0=conv(x_0_cp,h(1,:));             %  전송된 데이터가 다중경로 채널 통과(h0*x0)
         h1x1=conv(x_1_cp,h(2,:));             % h1*x1
-        h0x1=conv(-conj(x_1_cp),h(1,:));      % h0*-conj(x1)
+        h0x1=conv(conj(-x_1_cp),h(1,:));      % h0*-conj(x1)
         h1x0=conv(conj(x_0_cp),h(2,:));       % h1*conj(x0)
         
-        y_0=awgn_noise(h0x0,SNR(SNR_index))+awgn_noise(h1x1,SNR(SNR_index));  % 수신 신호 time=t
-        y_1=awgn_noise(h0x1,SNR(SNR_index))+awgn_noise(h1x0,SNR(SNR_index));  % time=t+T
+        y_0=awgn_noise(h0x0+h1x1,SNR(SNR_index)); % 수신 신호 time=t
+        y_1=awgn_noise(h0x1+h1x0,SNR(SNR_index)); % time=t+T
 
         y_0_remove_cp=y_0(GI_Size+1:GI_Size+FFT_Size);
         y_1_remove_cp=y_1(GI_Size+1:GI_Size+FFT_Size);
@@ -150,10 +150,10 @@ for SNR_index=1:length(SNR)
         
         % s_qpsk 행렬 값 및 신호 번호
         %
-        % (1,1) -> 1-j   |  (1,2) -> 1+j
+        % (1,1) -> -1+j  |  (1,2) -> 1+j
         %      s2        |       s1
         % -------------------------------
-        % (2,1) -> -1-j  |  (2,2) -> -1+j
+        % (2,1) -> -1-j  |  (2,2) -> 1-j
         %      s3        |       s4
         
         for row_index=1:2                           
@@ -170,11 +170,11 @@ for SNR_index=1:length(SNR)
                 end
                 
                 for data_num=0:1
-                 if data_num==0   
-                 ML_temp_stbc_0(sig_num,:)=(Y_0_combine-S_qpsk(row_index,col_index)).*conj((Y_0_combine-S_qpsk(row_index,col_index))); % ML 기법
-                 elseif data_num==1 
-                 ML_temp_stbc_1(sig_num,:)=(Y_1_combine-S_qpsk(row_index,col_index)).*conj((Y_1_combine-S_qpsk(row_index,col_index))); % ML 기법
-                 end
+                    if data_num==0   
+                        ML_temp_stbc_0(sig_num,:)=(Y_0_combine-S_qpsk(row_index,col_index)).*conj((Y_0_combine-S_qpsk(row_index,col_index))); % ML 기법
+                    elseif data_num==1 
+                        ML_temp_stbc_1(sig_num,:)=(Y_1_combine-S_qpsk(row_index,col_index)).*conj((Y_1_combine-S_qpsk(row_index,col_index))); % ML 기법
+                    end
                 end
                 
             end
@@ -252,7 +252,7 @@ semilogy(SNR,error_rate_egc,'-+')
 hold on
 semilogy(SNR,error_rate_mrc,'-*')
 hold on
-semilogy(SNR,error_rate_stbc,'s')
+semilogy(SNR,error_rate_stbc0,'s')
 
 title('BER Performance'), xlabel('SNR(dB)'),ylabel('BER')
 legend('SISO-OFDM','sc','egc','mrc','stbc'),axis([0 30 1e-6 1]),grid on
