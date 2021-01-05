@@ -47,8 +47,8 @@ for SNR_index=1:length(SNR)
             % SISO -> h의 1 채널 이용
             % STBC -> h의 1,2 채널 이용
             
-            h(Num_channel,:)=rayleigh_channel(Multi_path);          % time domain
-            H(Num_channel,:)=fft(h(Num_channel,:),FFT_Size);        % frequency domain
+            h(Num_channel,:)=rayleigh_channel(Multi_path);          % time domain channel
+            H(Num_channel,:)=fft(h(Num_channel,:),FFT_Size);        % frequency domain channel
             
             hx(Num_channel,:)=conv(x_0_cp,h(Num_channel,:));               % 전송된 데이터가 다중경로 채널 통과(h*x)
             y(Num_channel,:)=awgn_noise(hx(Num_channel,:),SNR(SNR_index)); % 채널 통과된 데이터에 awgn추가 (y=h*x+n)
@@ -73,7 +73,7 @@ for SNR_index=1:length(SNR)
         
         egc_weight=exp(j*angle(conj(H)));                   % combine weight 설정
         Y_egc_combined=sum((Y.*egc_weight));                % 전송받은 신호 Y와 weight곱하여 결합
-        X_egc=sum(Y_egc_combined./abs(H));                  % 채널의 amplitude로 나누어 추정 값 X 구함
+        X_egc=Y_egc_combined./sum(abs(H));                  % 채널의 amplitude로 나누어 추정 값 X 구함
         X_egc_demod=base_demod(X_egc,Modulation_Order);     % demodulation
         
        
