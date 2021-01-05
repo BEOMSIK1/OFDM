@@ -169,14 +169,10 @@ for SNR_index=1:length(SNR)
                     sig_num=4;
                 end
                 
-                for data_num=0:1
-                    if data_num==0   
-                        ML_temp_stbc_0(sig_num,:)=(Y_0_combine-S_qpsk(row_index,col_index)).*conj((Y_0_combine-S_qpsk(row_index,col_index))); % ML 扁过
-                    elseif data_num==1 
-                        ML_temp_stbc_1(sig_num,:)=(Y_1_combine-S_qpsk(row_index,col_index)).*conj((Y_1_combine-S_qpsk(row_index,col_index))); % ML 扁过
-                    end
-                end
-                
+                 
+                ML_temp_stbc_0(sig_num,:)=(Y_0_combine-S_qpsk(row_index,col_index)).*conj((Y_0_combine-S_qpsk(row_index,col_index))); % ML 扁过
+                ML_temp_stbc_1(sig_num,:)=(Y_1_combine-S_qpsk(row_index,col_index)).*conj((Y_1_combine-S_qpsk(row_index,col_index))); % ML 扁过
+  
             end
                 
         end
