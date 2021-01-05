@@ -35,6 +35,7 @@ for SNR_index=1:length(SNR)
             Y(Num_channel,:)=fft(y_remove_CP(Num_channel,:),FFT_Size)/sqrt(FFT_Size);  % CP제거된 데이터 FFT연산(신호의 power를 1로 하기 위해 sqrt(반송파 개수)로 나눠줌)
             Y_equalize(Num_channel,:)=Y(Num_channel,:)./H(Num_channel,:); 
             Y_demod(Num_channel,:)=base_demod(Y_equalize(Num_channel,:),Modulation_Order);                    % equalize된 데이터를 복조 
+            
 
         end
             num_error(Iter,SNR_index)=biterr(Data,Y_demod);                     % 각 SNR당 비트오류갯수를 Iteration마다 배열에 저장
