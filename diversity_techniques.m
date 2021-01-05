@@ -29,9 +29,9 @@ for SNR_index=1:length(SNR)
     N_0=10^(-SNR_index/10);                        % noise power
     for Iter=1:Iteration
         %% OFDM 신호 송신
-        % SISO-OFDM    -> X_0 사용 (1 X 1)
-        % SC, EGC, MRC -> X_0 사용 (1 X N)
-        % STBC         -> X_0, X_1 사용 (2 X 1)
+        % SISO-OFDM    -> X_0 사용 antenna(1 X 1)
+        % SC, EGC, MRC -> X_0 사용 antenna(1 X N)
+        % STBC         -> X_0, X_1 사용 antenna(2 X 1)
         
         X_0=randi([0 1],[1 Data_Size]);            % 0 or 1의 값을 가지는 Data_Size크기만큼의 데이터 생성
         X_1=randi([0 1],[1 Data_Size]); 
