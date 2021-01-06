@@ -34,36 +34,14 @@ for SNR_index=1:length(SNR)
         % STBC         -> X_0 사용 antenna(2 X 1)
         
         X_0=randi([0 1],[1 Data_Size]);            % 0 or 1의 값을 가지는 Data_Size크기만큼의 데이터 생성
-        %X_1=randi([0 1],[1 Data_Size]); 
+        X_1=randi([0 1],[1 Data_Size]); 
         X_0_mod=base_mod(X_0,Modulation_Order);    % 변조 방식에 따른 데이터 변조
-        %X_1_mod=base_mod(X_1,Modulation_Order);
+        X_1_mod=base_mod(X_1,Modulation_Order);
         x_0=ifft(X_0_mod)*sqrt(FFT_Size);          % 변조된 데이터 IFFT연산(각 반송파에서 보내는 신호의 power를 1로 하기위해 sqrt(반송파 개수)를 곱해줌
-        %x_1=ifft(X_1_mod)*sqrt(FFT_Size);
+        x_1=ifft(X_1_mod)*sqrt(FFT_Size);
         x_0_cp=[x_0(FFT_Size-GI_Size+1:end), x_0]; % IFFT연산된 데이터에 CP삽입
-        %x_1_cp=[x_1(FFT_Size-GI_Size+1:end), x_1]; 
-        for i=1:length(x_0)
-            if rem(i,4)==1
-                al_index(i)=i-2*(i-1);
-            elseif rem(i,4)==2
-                al_index(i)=i-2*(i-2);
-            elseif rem(i,4)==3
-                al_index(i)=-i+2*(i-2)+1;
-            elseif rem(i,4)==0
-                al_index(i)=0;
-            end
-        end
-        
-        for i=1:length(x_0)
-            if rem(i,4)==1
-                x_shuffle(i)=x_0(i-2*(i-1));
-            elseif rem(i,4)==2
-                x_shuffle(i)=x_0(i-2*(i-2));
-            elseif rem(i,4)==3
-                x_shuffle(i)=-conj(x_0(i-1));
-            elseif rem(i,4)==0
-                x_shuffle(i)=-conj(x_0(i-3));
-            end
-        end
+        x_1_cp=[x_1(FFT_Size-GI_Size+1:end), x_1]; 
+
         
         
         %% Tx -> Rx
