@@ -9,19 +9,8 @@ GI_Size=FFT_Size/4;                  % CP size
 Multi_path=7;                        % 다중경로 갯수
 Num_Antenna=2;                       % 수신 안테나 갯수 (2개 이상)
 SNR=0:3:30;
-Iteration=5000;
+Iteration=1000;
 
-%%  QPSK성상도
-
-%  10(s2) | 11(s1)
-%--------------------
-%  00(s3) | 01(s4)
-
-for odd=0:1                                                       
-    for even=0:1
-        S_qpsk(2-odd,even+1)=(((odd*2-1)*j)+(even*2-1))/sqrt(2);
-    end
-end
 
 
 %%  OFDM
@@ -31,7 +20,7 @@ for SNR_index=1:length(SNR)
         %% OFDM 신호 송신
         % SISO-OFDM    -> X_0 사용 antenna(1 X 1)
         % SC, EGC, MRC -> X_0 사용 antenna(1 X N)
-        % STBC         -> X_0 사용 antenna(2 X 1)
+        % STBC         -> X_0,X_1 사용 antenna(2 X 1)
         
         X_0=randi([0 1],[1 Data_Size]);            % 0 or 1의 값을 가지는 Data_Size크기만큼의 데이터 생성
         X_1=randi([0 1],[1 Data_Size]); 
@@ -41,17 +30,16 @@ for SNR_index=1:length(SNR)
         x_1=ifft(X_1_mod)*sqrt(FFT_Size);
         x_0_cp=[x_0(FFT_Size-GI_Size+1:end), x_0]; % IFFT연산된 데이터에 CP삽입
         x_1_cp=[x_1(FFT_Size-GI_Size+1:end), x_1]; 
+        
+       % 안테나 갯수만큼 채널 생성(Receiver Diversity)
+        h=rayleigh_channel([Multi_path Num_Antenna]);          % time domain channel
+        H=fft(h,FFT_Size,2);                                   % frequency domain channel
 
-        
-        
         %% Tx -> Rx
         for Num_channel=1:Num_Antenna                               % 안테나 갯수만큼 채널 생성(Receiver Diversity)
             % SISO -> h의 1 채널 이용
             % STBC -> h의 1,2 채널 이용
-            
-            h(Num_channel,:)=rayleigh_channel(Multi_path);          % time domain channel
-            H(Num_channel,:)=fft(h(Num_channel,:),FFT_Size);        % frequency domain channel
-            
+
             hx(Num_channel,:)=conv(x_0_cp,h(Num_channel,:));               % 전송된 데이터가 다중경로 채널 통과(h*x)
             y(Num_channel,:)=awgn_noise(hx(Num_channel,:),SNR(SNR_index)); % 채널 통과된 데이터에 awgn추가 (y=h*x+n)
             
@@ -82,46 +70,8 @@ for SNR_index=1:length(SNR)
         
         %% MRC
         
-        Y_mrc_combine=sum(conj(H).*Y);    % 결합된 mrc방식 신호   
-        
-        % s_qpsk 행렬 값 및 신호 번호
-        %
-        % (1,1) -> -1+j  |  (1,2) -> 1+j
-        %      s2        |       s1
-        % -------------------------------
-        % (2,1) -> -1-j  |  (2,2) -> 1-j
-        %      s3        |       s4
-        
-        for row_index=1:2                           
-            for col_index=1:2
-                n=[row_index,col_index];
-                if n==[1,2]               % 11(s1)
-                    sig_num=1;
-                elseif n==[1,1]           % 10(s2)
-                    sig_num=2; 
-                elseif n==[2,1]           % 01(s3)
-                    sig_num=3;
-                elseif n==[2,2]           % 00(s4)
-                    sig_num=4;
-                end
-                    
-                 ML_temp_mrc(sig_num,:)=(Y_mrc_combine-S_qpsk(row_index,col_index)).*conj((Y_mrc_combine-S_qpsk(row_index,col_index))); % ML 기법
-            end
-        end
-        [~,min_index_mrc]=min(ML_temp_mrc);               % ML기법을 통해 가장 거리가 가까운 신호의 번호
-        
-        for data_index=1:FFT_Size                         % 신호의 번호에 따라 qpsk 신호 값 매칭
-            if min_index_mrc(data_index)==1
-                X_mrc(data_index)=S_qpsk(1,2);            % s1
-            elseif min_index_mrc(data_index)==2
-                X_mrc(data_index)=S_qpsk(1,1);            % s2
-            elseif min_index_mrc(data_index)==3
-                X_mrc(data_index)=S_qpsk(2,1);            % s3
-            elseif min_index_mrc(data_index)==4
-                X_mrc(data_index)=S_qpsk(2,2);            % s4
-            end
-        end
-        
+        Y_mrc_combine=sum(conj(H).*Y);                    % 결합된 mrc방식 신호   
+        X_mrc=Y_mrc_combine./sum((abs(H).^2));            % equalize      
         X_mrc_demod=base_demod(X_mrc,Modulation_Order);   % demodulation
         
        
@@ -134,7 +84,7 @@ for SNR_index=1:length(SNR)
         
         h0x0=conv(x_0_cp,h(1,:));             %  전송된 데이터가 다중경로 채널 통과(h0*x0)
         h1x1=conv(x_1_cp,h(2,:));             % h1*x1
-        h0x1=conv(conj(-x_1_cp),h(1,:));      % h0*-conj(x1)
+        h0x1=conv(-conj(x_1_cp),h(1,:));      % h0*-conj(x1)
         h1x0=conv(conj(x_0_cp),h(2,:));       % h1*conj(x0)
         
         y_0=awgn_noise(h0x0+h1x1,SNR(SNR_index)); % 수신 신호 time=t
@@ -149,65 +99,9 @@ for SNR_index=1:length(SNR)
         Y_0_combine=conj(H(1,:)).*Y_0+H(2,:).*conj(Y_1);
         Y_1_combine=conj(H(2,:)).*Y_0-H(1,:).*conj(Y_1);
         
-        
-        % s_qpsk 행렬 값 및 신호 번호
-        %
-        % (1,1) -> -1+j  |  (1,2) -> 1+j
-        %      s2        |       s1
-        % -------------------------------
-        % (2,1) -> -1-j  |  (2,2) -> 1-j
-        %      s3        |       s4
-        
-        for row_index=1:2                           
-            for col_index=1:2
-                n=[row_index,col_index];
-                if n==[1,2]               % 11(s1)
-                    sig_num=1;
-                elseif n==[1,1]           % 10(s2)
-                    sig_num=2; 
-                elseif n==[2,1]           % 01(s3)
-                    sig_num=3;
-                elseif n==[2,2]           % 00(s4)
-                    sig_num=4;
-                end
-                
-                 
-                ML_temp_stbc_0(sig_num,:)=(Y_0_combine-S_qpsk(row_index,col_index)).*conj((Y_0_combine-S_qpsk(row_index,col_index))); % ML 기법
-                ML_temp_stbc_1(sig_num,:)=(Y_1_combine-S_qpsk(row_index,col_index)).*conj((Y_1_combine-S_qpsk(row_index,col_index))); % ML 기법
-  
-            end
-                
-        end
-       
-     
-        [~,min_index_stbc_0]=min(ML_temp_stbc_0);               % ML기법을 통해 가장 거리가 가까운 신호의 번호
-        [~,min_index_stbc_1]=min(ML_temp_stbc_1); 
-        
-        %  X_0 매칭
-        for data_index=1:FFT_Size                            % 신호의 번호에 따라 qpsk 신호 값 매칭
-            if min_index_stbc_0(data_index)==1
-                X_stbc_0(data_index)=S_qpsk(1,2);            % s1
-            elseif min_index_stbc_0(data_index)==2
-                X_stbc_0(data_index)=S_qpsk(1,1);            % s2
-            elseif min_index_stbc_0(data_index)==3
-                X_stbc_0(data_index)=S_qpsk(2,1);            % s3 
-            elseif min_index_stbc_0(data_index)==4
-                X_stbc_0(data_index)=S_qpsk(2,2);            % s4
-            end
-        end
-         
-        % X_1 매칭   
-            for data_index=1:FFT_Size                        % 신호의 번호에 따라 qpsk 신호 값 매칭
-                if min_index_stbc_1(data_index)==1
-                    X_stbc_1(data_index)=S_qpsk(1,2);            % s1
-            	elseif min_index_stbc_1(data_index)==2
-                    X_stbc_1(data_index)=S_qpsk(1,1);            % s2
-                elseif min_index_stbc_1(data_index)==3
-                    X_stbc_1(data_index)=S_qpsk(2,1);            % s3 
-                elseif min_index_stbc_1(data_index)==4
-                    X_stbc_1(data_index)=S_qpsk(2,2);            % s4
-                end
-            end
+        X_stbc_0=Y_0_combine./sum((abs(H).^2));
+        X_stbc_1=Y_1_combine./sum((abs(H).^2));
+      
         
         X_stbc_demod_0=base_demod(X_stbc_0,Modulation_Order);   % demodulation
         X_stbc_demod_1=base_demod(X_stbc_1,Modulation_Order);   % demodulation
