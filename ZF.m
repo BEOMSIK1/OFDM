@@ -6,10 +6,10 @@ FFT_Size=128;                         % 반송파 갯수
 Data_Size =FFT_Size*Modulation_Order; % 데이터 크기
 GI_Size=FFT_Size/4;                   % CP size
 Multi_path=7;                         % 다중경로 갯수
-Nr=2;
-Nt=2;
+Nr=3;
+Nt=4;
 SNR=0:3:30;
-Iteration=1000;
+Iteration=100;
 %%
 for SNR_index=1:length(SNR)
     for Iter=1:Iteration
@@ -28,7 +28,7 @@ for SNR_index=1:length(SNR)
         end
         
         for k=1:Nr
-            hx_comb(k,:)=sum(hx([(Nt*(k-1)+1) Nt*k],:));
+            hx_comb(k,:)=sum(hx([(Nt*(k-1)+1):Nt*k],:));
         end
 
          y=awgn_noise(hx_comb,SNR(SNR_index));                                    % 채널 통과된 데이터에 awgn추가 (y=h*x+n)
@@ -36,7 +36,7 @@ for SNR_index=1:length(SNR)
          Y=fft(y_remove_CP,FFT_Size,2)/sqrt(FFT_Size);                       % CP제거된 데이터 FFT연산(신호의 power를 1로 하기 위해 sqrt(반송파 개수)로 나눠줌)
          
          %% Zero Forcing
-         H_rv=reshape(H,2,2,[]);
+         H_rv=reshape(H,Nt,Nr,[]);
          for K=1:FFT_Size
              H_ch=transpose(H_rv(:,:,K));
              G_zf=inv(H_ch'*H_ch)*H_ch';
@@ -45,7 +45,7 @@ for SNR_index=1:length(SNR)
          X_hat_demod=base_demod(X_hat,Modulation_Order);
          num_error(Iter,SNR_index)=biterr(Data,X_hat_demod);
     end
-    error_rate=(sum(num_error,1)/Data_Size)/Iteration; 
+    error_rate=(sum(num_error,1)/(Data_Size*Nt))/Iteration; 
 end
 semilogy(SNR,error_rate,'-o')
 title('BER Performance'), xlabel('SNR(dB)'),ylabel('BER')
