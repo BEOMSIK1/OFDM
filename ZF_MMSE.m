@@ -9,7 +9,7 @@ Multi_path=7;                         % 다중경로 갯수
 Nr=4;
 Nt=4;
 SNR=0:3:30;
-Iteration=10000;
+Iteration=1000;
 %%
 for SNR_index=1:length(SNR)
     N_0=10^(-SNR_index/10); 

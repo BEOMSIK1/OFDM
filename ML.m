@@ -1,14 +1,14 @@
 clc, clear, close all;
 %% Parameters
-Modulation_Order=2;                   % 변조 방법 
+Modulation_Order=4;                   % 변조 방법 
 FFT_Size=128;                         % 반송파 갯수
 Data_Size =FFT_Size*Modulation_Order; % 데이터 크기
 GI_Size=FFT_Size/4;                   % CP size
 Multi_path=7;                         % 다중경로 갯수
-Nr=4;
-Nt=4;
+Nr=2;
+Nt=2;
 SNR=0:3:30;
-Iteration=10000;
+Iteration=100;
 
 for SNR_index=1:length(SNR)
     for Iter=1:Iteration

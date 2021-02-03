@@ -71,7 +71,7 @@ for SNR_index=1:length(SNR)
         %% MRC
         
         Y_mrc_combine=sum(conj(H).*Y);                    % 결합된 mrc방식 신호   
-        X_mrc=Y_mrc_combine./sum((abs(H).^2));            % equalize      
+        X_mrc=Y_mrc_combine./sum(H.*conj(H));            % equalize      
         X_mrc_demod=base_demod(X_mrc,Modulation_Order);   % demodulation
         
        
@@ -81,8 +81,8 @@ for SNR_index=1:length(SNR)
         % time=t+T  -> antenna0: -conj(x1)  antenna1: conj(x0)
         % 채널 행렬 h의 1,2채널 이용
        
-        
-        h0x0=conv(x_0_cp,h(1,:));             %  전송된 데이터가 다중경로 채널 통과(h0*x0)
+        %  전송된 데이터가 다중경로 채널 통과
+        h0x0=conv(x_0_cp,h(1,:));             % h0*x0
         h1x1=conv(x_1_cp,h(2,:));             % h1*x1
         h0x1=conv(-conj(x_1_cp),h(1,:));      % h0*-conj(x1)
         h1x0=conv(conj(x_0_cp),h(2,:));       % h1*conj(x0)
