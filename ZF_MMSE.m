@@ -48,8 +48,10 @@ for SNR_index=1:length(SNR)
          %% Minimum Mean-Squared Error
          for K=1:FFT_Size
              H_ch=transpose(H_rv(:,:,K));
-             G_mmse=inv(H_ch'*H_ch+(N_0^2)*eye(Nt))*H_ch';
-             X_hat_mmse(:,K)=G_mmse*Y(:,K);
+             H_bar=[H_ch;N_0*eye(Nt)];
+             Y_bar=[Y;zeros(Nt,FFT_Size)];
+             G_mmse=inv(H_bar'*H_bar)*H_bar';
+             X_hat_mmse(:,K)=G_mmse*Y_bar(:,K);
          end
          X_hat_demod_mmse=base_demod(X_hat_mmse,Modulation_Order);
          num_error_mmse(Iter,SNR_index)=biterr(Data,X_hat_demod_mmse);

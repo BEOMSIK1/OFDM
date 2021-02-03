@@ -8,7 +8,7 @@ Multi_path=7;                         % 다중경로 갯수
 Nr=4;
 Nt=4;
 SNR=0:3:30;
-Iteration=100;
+Iteration=10000;
 
 for SNR_index=1:length(SNR)
     for Iter=1:Iteration
@@ -35,42 +35,28 @@ for SNR_index=1:length(SNR)
              H_ch=transpose(H_rv(:,:,l));
          end
        %% reference
-
-                  ref=de2bi(0:2^(Nt*Modulation_Order)-1,'left-msb');
-                  mod_ref=base_mod(ref,Modulation_Order);
-                   for k=1:(2^(Modulation_Order*Nt))
-                       for l=1:FFT_Size
-                           H_ch=transpose(H_rv(:,:,l));
-                           rx_ref(:,l)=H_ch*transpose(mod_ref(k,:));
-                       end
-                       distance(k,:)=sum((Y-rx_ref).*(conj(Y)-conj(rx_ref)));
-                   end
-                   [~,min_idx]=min(distance);
-                   for k=1:FFT_Size
-                       temp_idx=min_idx(k);
-                       temp_X(k,:)=mod_ref(temp_idx,:);
-                   end
-                   X_hat=base_demod(transpose(temp_X),Modulation_Order);
-
-          
-          
-          
-      
-         
-         
-         %Y_demod=base_demod(Y_equalize,Modulation_Order);                    % equalize된 데이터를 복조 
-        
-     
+       ref=de2bi(0:2^(Nt*Modulation_Order)-1,'left-msb');
+       mod_ref=base_mod(ref,Modulation_Order);
+       for k=1:(2^(Modulation_Order*Nt))
+           for l=1:FFT_Size
+               H_ch=transpose(H_rv(:,:,l));
+               rx_ref(:,l)=H_ch*transpose(mod_ref(k,:));
+           end
+           distance(k,:)=sum((Y-rx_ref).*(conj(Y)-conj(rx_ref)));
+       end
+       [~,min_idx]=min(distance);
+       for k=1:FFT_Size
+           temp_idx=min_idx(k);
+           temp_X(k,:)=mod_ref(temp_idx,:);
+       end
+       X_hat=base_demod(transpose(temp_X),Modulation_Order);
         %% error 
          num_error(Iter,SNR_index)=biterr(Data,X_hat);                     % 각 SNR당 비트오류갯수를 Iteration마다 배열에 저장
 
     end
 end
 error_rate=(sum(num_error,1)/(Data_Size*Nt))/Iteration;
-
-
 %% graph
   semilogy(SNR,error_rate,'-o')
- 
   title('BER Performance'), xlabel('SNR(dB)'),ylabel('BER')
   grid on
