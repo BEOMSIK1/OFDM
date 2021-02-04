@@ -9,7 +9,6 @@ Nr=2;
 Nt=2;
 SNR=0:3:30;
 Iteration=100;
-
 for SNR_index=1:length(SNR)
     for Iter=1:Iteration
         %% MIMO-OFDM
@@ -28,8 +27,7 @@ for SNR_index=1:length(SNR)
         end
         y=awgn_noise(hx_comb,SNR(SNR_index));                                    % 채널 통과된 데이터에 awgn추가 (y=h*x+n)
         y_remove_CP=y(:,GI_Size+1:GI_Size+FFT_Size);                        %remove CP
-        Y=fft(y_remove_CP,FFT_Size,2)/sqrt(FFT_Size);                       % CP제거된 데이터 FFT연산(신호의 power를 1로 하기 위해 sqrt(반송파 개수)로 나눠줌)
-        
+        Y=fft(y_remove_CP,FFT_Size,2)/sqrt(FFT_Size);                       % CP제거된 데이터 FFT연산(신호의 power를 1로 하기 위해 sqrt(반송파 개수)로 나눠줌) 
         H_rv=reshape(H,Nt,Nr,[]);
          for l=1:FFT_Size
              H_ch=transpose(H_rv(:,:,l));
@@ -52,7 +50,6 @@ for SNR_index=1:length(SNR)
        X_hat=base_demod(transpose(temp_X),Modulation_Order);
         %% error 
          num_error(Iter,SNR_index)=biterr(Data,X_hat);                     % 각 SNR당 비트오류갯수를 Iteration마다 배열에 저장
-
     end
 end
 error_rate=(sum(num_error,1)/(Data_Size*Nt))/Iteration;
