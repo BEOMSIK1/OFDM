@@ -25,11 +25,11 @@ for K=1:FFT_Size
         if i~=Nt
             for j=1:M
                 rx=Rs(i,i+1:end)*selc_ref(i+1:end,j);
-                e(:,j)=(abs(repmat(Z(i),2^(Modulation_Order),1)-(Rs(i,i)*reference+repmat(rx,2^(Modulation_Order),1))).^2)+e_temp(j);
+                e(:,j)=(abs(repmat(Z(i),2^(Modulation_Order),1)-(Rs(i,i)*reference+repmat(rx,2^(Modulation_Order),1))).^2)+e_temp(j);             % 누적에러 (Nt-1 ~ 1)layer
             end
             e=reshape(e,[],1);
         else
-            e=abs(repmat(Z(i),2^(Modulation_Order),1)-Rs(i,i)*reference).^2;
+            e=abs(repmat(Z(i),2^(Modulation_Order),1)-Rs(i,i)*reference).^2;                                                                      % Nt layer 에러
         end
         %% indexing
         [e_temp,idx]=sort(e);
@@ -37,16 +37,16 @@ for K=1:FFT_Size
         idx_temp(Nt+1-i,:)=idx(1:M);
         %% symbol select
         if i~=Nt
-            remainder=rem(idx_temp(Nt+1-i,:),2^(Modulation_Order));
-            symbol_num(i,:)=remainder;
-            n=find(symbol_num(i,:)==0);
-            symbol_num(i,n)=2^(Modulation_Order);
-            remainder=rem(idx_temp(Nt+1-i,:),2^(Modulation_Order));
-            zero_idx=find(remainder==0);
-            idx_temp(Nt+1-i,zero_idx)=idx_temp(Nt+1-i,zero_idx)-1;
-            u=fix(idx_temp(Nt+1-i,:)./2^(Modulation_Order))+1;
-            symbol_num(i+1:end,:)=symbol_num(i+1:end,u);
-            selc_ref(i:end,:)=reference(symbol_num(i:end,:));
+            remainder=rem(idx_temp(Nt+1-i,:),2^(Modulation_Order));         % 에러 index를 심볼 개수로 나눔=> 나머지=심볼 번호를 의미
+            symbol_num(i,:)=remainder;                        
+            n=find(symbol_num(i,:)==0);                                     % 나머지가 0인경우 마지막 심볼번호를 의미
+            symbol_num(i,n)=2^(Modulation_Order);                           % 0인 경우에 마지막 심볼번호 대입
+%             remainder=rem(idx_temp(Nt+1-i,:),2^(Modulation_Order));         %
+            zero_idx=find(remainder==0);                                    % 현재 심볼이 이전 어느심볼의 가지에서 나왔는가 추정, 몫이 이전 심볼 번호에 해당                   
+            idx_temp(Nt+1-i,zero_idx)=idx_temp(Nt+1-i,zero_idx)-1;          % 마지막 심볼번호는 몫이 1이 더크므로 -1
+            u=fix(idx_temp(Nt+1-i,:)./2^(Modulation_Order))+1;              % 모든 심볼 번호에 +1해주면 이전 심볼의 index를 출력
+            symbol_num(i+1:end,:)=symbol_num(i+1:end,u);                    % 이전 심볼과 현재 심볼을 묶어서 열 변환
+            selc_ref(i:end,:)=reference(symbol_num(i:end,:));               % 해당 번호의 reference 신호 mapping
         else
             symbol_num(i,:)=rem(idx_temp,2^(Modulation_Order));
             n=find(symbol_num(i,:)==0);
