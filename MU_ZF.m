@@ -1,7 +1,7 @@
 function [Y_demod] = MU_ZF(P,power_index,X_mod,H,SNR,modulation_order)
 
-%% Precoding (ZF)
-tx_power=norm(X_mod,'fro')*(10^(P(power_index)/10));       % rho
+%% Precoding (ZF)    
+tx_power=1*(10^(P(power_index)/10));                       % rho 
 gamma=trace(inv(H*H'))./tx_power;                          % normalize
 precoded_matrix = (H'*inv(H*H'))./sqrt(gamma);             % 전처리 행렬
 %% Tx-Rx

@@ -1,7 +1,7 @@
 function [Y_demod] = MU_MMSE(P,power_index,X_mod,H,SNR,modulation_order,K,Nt)
 
 %% Precoding (MMSE)
-tx_power=norm(X_mod,'fro')*(10^(P(power_index)/10));       % rho
+tx_power=1*(10^(P(power_index)/10));                                 % rho 
 z=K/tx_power;
 gamma=trace(inv(H*H'+z*eye(Nt)))./tx_power;                          % normalize
 precoded_matrix = (H'*inv(H*H'+z*eye(Nt)))./sqrt(gamma);             % 전처리 행렬
