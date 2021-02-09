@@ -6,7 +6,7 @@ for i=1:K
     H_tilde=H;
     H_tilde(idx-(Nr-1):idx,:) = [];                               % i 번째 채널을 제외한 H_slash_i 생성
     [~,~,V] = svd(H_tilde);                                       % singular value decomposition
-    F(:,idx-(Nr-1):idx) = transpose(V(Nt-Nr+1:Nt,:));                        % precoding matrix (F_j)
+    F(:,idx-(Nr-1):idx) = V(Nt-Nr+1:Nt,:)';                        % precoding matrix (F_j)
 end
 %% Tx-Rx
 X_power=1*(10^(P(power_index)/10));                               % rho 값 (modulation된 신호의 power, 프로베니우스 놈)
