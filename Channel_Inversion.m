@@ -8,7 +8,7 @@ symbol_size = 128;
 data_size = symbol_size*modulation_order;
 P=0:3:30;                                   % power
 SNR=0;
-iteration=10000;
+iteration=1000;
 %% Channel inversion
 for power_index=1:length(P)
     for iter=1:iteration
@@ -18,7 +18,7 @@ for power_index=1:length(P)
         X=randi([0 1], [Nt, data_size]);                                    % N_t개의 서로 다른 데이터 (송신측)
         X_mod = base_mod(X, modulation_order);                              % modulation
         %% ZF
-        Y_demod_ZF=MU_ZF(P,power_index,X_mod,H,SNR,modulation_order);
+        Y_demod_ZF=MU_ZF(P,power_index,X_mod,H,SNR,modulation_order,Nt);
         %% MMSE
         Y_demod_MMSE=MU_MMSE(P,power_index,X_mod,H,SNR,modulation_order,K,Nt);
         %% Error

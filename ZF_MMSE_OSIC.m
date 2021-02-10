@@ -5,8 +5,8 @@ FFT_Size=128;                         % 반송파 갯수
 Data_Size =FFT_Size*Modulation_Order; % 데이터 크기
 GI_Size=FFT_Size/4;                   % CP size
 Multi_path=7;                         % 다중경로 갯수
-Nr=2;
-Nt=2;
+Nr=4;
+Nt=4;
 SNR=0:3:30;
 Iteration=1000;
 %%

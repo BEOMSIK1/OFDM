@@ -1,4 +1,4 @@
-function [Y_demod] = MU_ZF(P,power_index,X_mod,H,SNR,modulation_order)
+function [Y_demod] = MU_ZF(P,power_index,X_mod,H,SNR,modulation_order,Nt)
 
 %% Precoding (ZF)    
 tx_power=1*(10^(P(power_index)/10));                       % rho 

@@ -19,7 +19,7 @@ for power_index=1:length(P)
         X=randi([0 1], [Nt, data_size]);                                    % N_t개의 서로 다른 데이터 (송신측)
         X_mod = base_mod(X, modulation_order);                              % modulation
         %% BD
-        [Y_demod,S]=MU_BD(P,power_index,X_mod,H,SNR,modulation_order,Nt,Nr);
+        [Y_demod,S]=MU_BD(P,power_index,X_mod,H,SNR,modulation_order,Nt,Nr,noise_power);
         num_error(iter,power_index)=biterr(X,Y_demod);                    % x,y의 총 error 발생 횟수
         %% Sum rate
         SR(iter,power_index)=S;    
@@ -33,5 +33,5 @@ title('BER Performance'), xlabel('Transmit Power(dB)'),ylabel('BER'),legend('BD'
 grid on
 figure
 plot(P,sum_rate,'-o')
-title('Sum Rate'), xlabel('Transmit Power(dB)'),ylabel('Sum Rate(bps/Hz'),legend('BD')
+title('Sum Rate'), xlabel('Transmit Power(dB)'),ylabel('Sum Rate(bps/Hz)'),legend('BD')
 grid on

@@ -1,6 +1,6 @@
 clc, clear, close all;
 %% Parameters
-Modulation_Order=2;                   % 변조 방법 2:QPSK, 4:QAM
+Modulation_Order=4;                   % 변조 방법 2:QPSK, 4:QAM
 FFT_Size=128;                         % 반송파 갯수
 Data_Size =FFT_Size*Modulation_Order; % 데이터 크기
 GI_Size=FFT_Size/4;                   % CP size
@@ -8,7 +8,7 @@ Multi_path=7;                         % 다중경로 갯수
 Nt=2;                                  % 송신 안테나 갯수
 Nr=1;                                  % 수신 안테나 갯수
 SNR=0:3:30;
-Iteration=5000;
+Iteration=1000;
 %% Spatial Phase Coding
 for SNR_index=1:length(SNR)
     for Iter=1:Iteration

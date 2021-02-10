@@ -3,7 +3,7 @@ function [X_hat] = ZF_QRDM (FFT_Size,Modulation_Order,M,Nt,Nr,H,Y,reference)
 
 %% ZF_QRDM
 for K=1:FFT_Size
-    H_ch=transpose(H(:,:,K));
+    H_ch=transpose(H(:,:,K));                 % MIMO channel
     G_zf=inv(H_ch'*H_ch)*H_ch';
     norm_g_zf=sum(G_zf.*conj(G_zf),2);
     [~,norm_idx]=sort(norm_g_zf,'descend');

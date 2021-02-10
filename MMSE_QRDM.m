@@ -3,7 +3,7 @@ function [X_hat] = MMSE_QRDM (FFT_Size,Modulation_Order,M,Nt,Nr,H,Y,N_0,referenc
 
 %% MMSE_QRDM
 for K=1:FFT_Size
-    H_ch=transpose(H(:,:,K));
+    H_ch=transpose(H(:,:,K));       % MIMO channel
     H_bar=[H_ch;N_0*eye(Nt)];
     Y_bar=[Y;zeros(Nt,FFT_Size)];
     G=inv(H_bar'*H_bar)*H_bar';

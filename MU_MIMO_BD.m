@@ -11,7 +11,7 @@ noise_power = 1;
 
 
 SNR=0:3:30;
-Iteration=10000;
+Iteration=1000;
 
 %% channel generate
 for i=1:K
