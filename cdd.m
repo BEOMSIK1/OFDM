@@ -1,11 +1,11 @@
-clc, clear, close all;
+  clc, clear, close all;
 %% Parameters
 
 Modulation_Order=2;                   % 변조 방법 2:QPSK, 4:QAM
 FFT_Size=128;                         % 반송파 갯수
 Data_Size =FFT_Size*Modulation_Order; % 데이터 크기
 GI_Size=FFT_Size/4;                   % CP size
-Multi_path=1;                         % 다중경로 갯수
+Multi_path=7;                         % 다중경로 갯수
 N=2;                                  % 송신 안테나 갯수
 M=1;                                  % 수신 안테나 갯수
 cl=3;                                 % constraint length
