@@ -1,8 +1,8 @@
 clc, clear, close all;
 %% Parameters
-Nt = 4;                                     % 송신안테나 개수
+Nt = 16;                                     % 송신안테나 개수
 Nr = 1;                                     % 수신안테나 개수 / 유저
-K = Nt/Nr;                                  % 유저의 수
+K = 8;                                  % 유저의 수
 modulation_order = 4;                       % 1:BPSK  2:QPSK  4: 16QAM  6: 64QAM  8: 256QAM
 symbol_size = 128;
 data_size = symbol_size*modulation_order;
@@ -15,7 +15,7 @@ for power_index=1:length(P)
         %% Channel genrate
         H=(randn(Nr*K,Nt)+j*randn(Nr*K,Nt))/sqrt(2);
         %% Data
-        X=randi([0 1], [Nt, data_size]);                                    % N_t개의 서로 다른 데이터 (송신측)
+        X=randi([0 1], [K, data_size]);                                    % N_t개의 서로 다른 데이터 (송신측)
         X_mod = base_mod(X, modulation_order);                              % modulation
         %% ZF
         Y_demod_ZF=MU_ZF(P,power_index,X_mod,H,SNR,modulation_order,Nt);

@@ -9,7 +9,7 @@ data_size = symbol_size*modulation_order;
 noise_power = 1;
 P=0:3:30;                                  % transmit power
 SNR=0;
-iteration=1000;
+iteration=10000;
 %% Block Digonalization
 for power_index=1:length(P)
     for iter=1:iteration

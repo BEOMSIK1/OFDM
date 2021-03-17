@@ -1,59 +1,65 @@
 clc, clear, close all;
 %% Parameters
-
-Modulation_Order=2;                   % º¯Á¶ ¹æ¹ı 
-FFT_Size=128;                         % ¹İ¼ÛÆÄ °¹¼ö
-Data_Size =FFT_Size*Modulation_Order; % µ¥ÀÌÅÍ Å©±â
+Modulation_Order=2;                   % ë³€ì¡° ë°©ë²•
+FFT_Size=128;                         % ë°˜ì†¡íŒŒ ê°¯ìˆ˜
+Data_Size =FFT_Size*Modulation_Order; % ë°ì´í„° í¬ê¸°
 GI_Size=FFT_Size/4;                   % CP size
-Multi_path=7;                         % ´ÙÁß°æ·Î °¹¼ö
-Nr=4;
-Nt=4;
+Multi_path=7;                         % ë‹¤ì¤‘ê²½ë¡œ ê°¯ìˆ˜
+Nr=2;
+Nt=2;
 SNR=0:3:30;
-Iteration=5000;
+Iteration=1000;
 %%
 for SNR_index=1:length(SNR)
-    N_0=10^(-SNR_index/10); 
+    N_0=10^(-SNR(SNR_index)/10);
     for Iter=1:Iteration
         %% MIMO-OFDM
-        Data = randi([0 1],[Nt Data_Size]);     
-        mod_data=base_mod(Data,Modulation_Order);                           % º¯Á¶ ¹æ½Ä¿¡ µû¸¥ µ¥ÀÌÅÍ º¯Á¶
-        IFFT_data=ifft(mod_data,FFT_Size,2)*sqrt(FFT_Size);                 % º¯Á¶µÈ µ¥ÀÌÅÍ IFFT¿¬»ê(°¢ ¹İ¼ÛÆÄ¿¡¼­ º¸³»´Â ½ÅÈ£ÀÇ power¸¦ 1·Î ÇÏ±âÀ§ÇØ sqrt(¹İ¼ÛÆÄ °³¼ö)¸¦ °öÇØÁÜ
-        Add_CP_data=[IFFT_data(:,FFT_Size-GI_Size+1:end), IFFT_data];       % IFFT¿¬»êµÈ µ¥ÀÌÅÍ¿¡ CP»ğÀÔ
-        
+        Data = randi([0 1],[Nt Data_Size]);
+        mod_data=base_mod(Data,Modulation_Order)./sqrt(Nt);                           % ë³€ì¡° ë°©ì‹ì— ë”°ë¥¸ ë°ì´í„° ë³€ì¡°
+        IFFT_data=ifft(mod_data,FFT_Size,2)*sqrt(FFT_Size);                 % ë³€ì¡°ëœ ë°ì´í„° IFFTì—°ì‚°(ê° ë°˜ì†¡íŒŒì—ì„œ ë³´ë‚´ëŠ” ì‹ í˜¸ì˜ powerë¥¼ 1ë¡œ í•˜ê¸°ìœ„í•´ sqrt(ë°˜ì†¡íŒŒ ê°œìˆ˜)ë¥¼ ê³±í•´ì¤Œ
+        Add_CP_data=[IFFT_data(:,FFT_Size-GI_Size+1:end), IFFT_data];       % IFFTì—°ì‚°ëœ ë°ì´í„°ì— CPì‚½ì…
         copied_cpdata=repmat(Add_CP_data,Nr,1);
- 
         h=rayleigh_channel([Multi_path, Nt*Nr]);                             % time domain channel
         H=fft(h,FFT_Size,2);                                                % frequency domain channel
         for k=1:(Nt*Nr)
             hx(k,:)=conv(copied_cpdata(k,:),h(k,:));
         end
-        
         for k=1:Nr
             hx_comb(k,:)=sum(hx([(Nt*(k-1)+1):Nt*k],:));
         end
-
-         y=awgn_noise(hx_comb,SNR(SNR_index));                                    % Ã¤³Î Åë°úµÈ µ¥ÀÌÅÍ¿¡ awgnÃß°¡ (y=h*x+n)
-         y_remove_CP=y(:,GI_Size+1:GI_Size+FFT_Size);                        %remove CP
-         Y=fft(y_remove_CP,FFT_Size,2)/sqrt(FFT_Size);                       % CPÁ¦°ÅµÈ µ¥ÀÌÅÍ FFT¿¬»ê(½ÅÈ£ÀÇ power¸¦ 1·Î ÇÏ±â À§ÇØ sqrt(¹İ¼ÛÆÄ °³¼ö)·Î ³ª´²ÁÜ)
-         
-         %% Zero Forcing-OSIC
-         H_rv=reshape(H,Nt,Nr,[]);
-         X_hat_zf=ZF_OSIC(FFT_Size,Modulation_Order,Nt,H_rv,Y);
-         X_hat_demod_zf=base_demod(X_hat_zf,Modulation_Order);
-         num_error_zf(Iter,SNR_index)=biterr(Data,X_hat_demod_zf);
-         %% Minimum Mean-Squared Error
-
-         X_hat_mmse=MMSE_OSIC(FFT_Size,Modulation_Order,Nt,H_rv,Y,N_0);
-         X_hat_demod_mmse=base_demod(X_hat_mmse,Modulation_Order);
-         num_error_mmse(Iter,SNR_index)=biterr(Data,X_hat_demod_mmse);
-
-
+        y=awgn_noise(hx_comb,SNR(SNR_index));                                    % ì±„ë„ í†µê³¼ëœ ë°ì´í„°ì— awgnì¶”ê°€ (y=h*x+n)
+        y_remove_CP=y(:,GI_Size+1:GI_Size+FFT_Size);                        %remove CP
+        Y=fft(y_remove_CP,FFT_Size,2)/sqrt(FFT_Size)*sqrt(Nt);                       % CPì œê±°ëœ ë°ì´í„° FFTì—°ì‚°(ì‹ í˜¸ì˜ powerë¥¼ 1ë¡œ í•˜ê¸° ìœ„í•´ sqrt(ë°˜ì†¡íŒŒ ê°œìˆ˜)ë¡œ ë‚˜ëˆ ì¤Œ)
+        %% Zero Forcing-OSIC
+        H_rv=reshape(H,Nt,Nr,[]);
+        X_hat_zf_osic=ZF_OSIC(FFT_Size,Modulation_Order,Nt,H_rv,Y);
+        X_hat_demod_zf_osic=base_demod(X_hat_zf_osic,Modulation_Order);
+        num_error_zf_osic(Iter,SNR_index)=biterr(Data,X_hat_demod_zf_osic);
+        %% Minimum Mean-Squared Error_OSIC
+        X_hat_mmse_osic=MMSE_OSIC(FFT_Size,Modulation_Order,Nt,H_rv,Y,N_0);
+        X_hat_demod_mmse_osic=base_demod(X_hat_mmse_osic,Modulation_Order);
+        num_error_mmse_osic(Iter,SNR_index)=biterr(Data,X_hat_demod_mmse_osic);
+        %% Zero Forcing_DFE
+        X_hat_zf_dfe=ZF_DFE (FFT_Size,Modulation_Order,Nt,Nr,H_rv,Y);
+        X_hat_demod_zf_dfe=base_demod(X_hat_zf_dfe,Modulation_Order);
+        num_error_zf_dfe(Iter,SNR_index)=biterr(Data,X_hat_demod_zf_dfe);
+        %% Minimum Mean-Squared Error_DFE
+        X_hat_mmse_dfe=MMSE_DFE(FFT_Size,Modulation_Order,Nt,Nr,H_rv,Y,N_0);
+        X_hat_demod_mmse_dfe=base_demod(X_hat_mmse_dfe,Modulation_Order);
+        num_error_mmse_dfe(Iter,SNR_index)=biterr(Data,X_hat_demod_mmse_dfe);
     end
-    error_rate_zf=(sum(num_error_zf,1)/(Data_Size*Nt))/Iteration; 
-    error_rate_mmse=(sum(num_error_mmse,1)/(Data_Size*Nt))/Iteration;
- end
-semilogy(SNR,error_rate_zf,'-o')
+    error_rate_zf_dfe=(sum(num_error_zf_dfe,1)/(Data_Size*Nt))/Iteration;
+    error_rate_mmse_dfe=(sum(num_error_mmse_dfe,1)/(Data_Size*Nt))/Iteration;
+    error_rate_zf_osic=(sum(num_error_zf_osic,1)/(Data_Size*Nt))/Iteration;
+    error_rate_mmse_osic=(sum(num_error_mmse_osic,1)/(Data_Size*Nt))/Iteration;
+end
+semilogy(SNR,error_rate_zf_osic,'-o')
 hold on
-semilogy(SNR,error_rate_mmse,'-*')
+semilogy(SNR,error_rate_mmse_osic,'-*')
+hold on
+semilogy(SNR,error_rate_zf_dfe,'-+')
+hold on
+semilogy(SNR,error_rate_mmse_dfe,'-v')
+
 title('BER Performance'), xlabel('SNR(dB)'),ylabel('BER')
-legend('ZF','MMSE'),axis([0 30 1e-4 1]),grid on
+legend('ZF-OSIC','MMSE-OSIC','ZF-DFE','MMSE-DFE'),grid on

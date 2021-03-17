@@ -13,6 +13,7 @@ code_rate=1/2;                        % code rate
                              
 SNR=0:3:30;
 Iteration=1000;
+%%%%%%%% 다중 안테나 -> 안테나 수만큼 정규화  /sqrt(Nt)%%%%%%%%%%
 
 %% Cyclic Delay Diversity
 for SNR_index=1:length(SNR)

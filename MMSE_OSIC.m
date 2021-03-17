@@ -2,7 +2,7 @@ function [X_hat] = MMSE_OSIC (FFT_Size,Modulation_Order,Nt,H,Y,N_0)
 
 for K=1:FFT_Size
     H_ch=transpose(H(:,:,K));
-    H_bar=[H_ch;N_0*eye(Nt)];
+    H_bar=[H_ch;sqrt(N_0)*eye(Nt)];
     Y_bar=[Y;zeros(Nt,FFT_Size)];
     temp_idx=[1:Nt];
     for i=1:Nt
